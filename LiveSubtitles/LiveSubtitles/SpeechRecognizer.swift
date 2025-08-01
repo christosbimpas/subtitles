@@ -12,6 +12,10 @@ class SpeechRecognizer {
         let recognizer = SFSpeechRecognizer(locale: locale)
         guard let recognizer = recognizer, recognizer.isAvailable else { return }
 
+        let session = AVAudioSession.sharedInstance()
+        try session.setCategory(.record, mode: .measurement, options: .duckOthers)
+        try session.setActive(true, options: .notifyOthersOnDeactivation)
+
         audioEngine = AVAudioEngine()
         request = SFSpeechAudioBufferRecognitionRequest()
         guard let request = request, let audioEngine = audioEngine else { return }
