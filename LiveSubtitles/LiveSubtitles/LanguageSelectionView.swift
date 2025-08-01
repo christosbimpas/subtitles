@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LanguageSelectionView: View {
     let languages: [Language]
-    @Binding var selected: Language?
+    @Binding var selected: Language
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {

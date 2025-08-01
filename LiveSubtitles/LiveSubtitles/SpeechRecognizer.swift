@@ -7,9 +7,11 @@ class SpeechRecognizer {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
 
-    func start(locale: Locale = Locale(identifier: "en-US"), onResult: @escaping (String) -> Void) throws {
+    /// Starts listening using the provided locale. If no locale is supplied the
+    /// device's current locale is used.
+    func start(locale: Locale? = nil, onResult: @escaping (String) -> Void) throws {
         stop()
-        let recognizer = SFSpeechRecognizer(locale: locale)
+        let recognizer = SFSpeechRecognizer(locale: locale ?? Locale.current)
         guard let recognizer = recognizer, recognizer.isAvailable else { return }
 
         let session = AVAudioSession.sharedInstance()

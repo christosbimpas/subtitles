@@ -4,10 +4,12 @@ import Speech
 
 @MainActor
 final class SubtitlesViewModel: ObservableObject {
-    @Published var selectedLanguage: Language? = nil
+    @Published var inputLanguage: Language = .automatic
+    @Published var outputLanguage: Language = Language.supported.first ?? .automatic
     @Published var isRecording = false
     @Published var translatedText = ""
-    @Published var showSelector = false
+    @Published var showInputSelector = false
+    @Published var showOutputSelector = false
 
     private let recognizer = SpeechRecognizer()
     private let translator = Translator()
@@ -28,11 +30,13 @@ final class SubtitlesViewModel: ObservableObject {
             }
             SFSpeechRecognizer.requestAuthorization { _ in }
             isRecording = true
-            try? recognizer.start { [weak self] text in
+            let locale = inputLanguage.locale
+            try? recognizer.start(locale: locale) { [weak self] text in
                 guard let self = self else { return }
                 Task {
-                    let target = self.selectedLanguage?.code ?? "en"
-                    let translated = await self.translator.translate(text, to: target)
+                    let target = self.outputLanguage.code
+                    let source = self.inputLanguage.code == "auto" ? nil : self.inputLanguage.code
+                    let translated = await self.translator.translate(text, from: source, to: target)
                     await MainActor.run {
                         self.translatedText = translated
                     }
@@ -48,8 +52,17 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 20) {
             HStack {
-                Button(model.selectedLanguage?.name ?? "Select Language") {
-                    model.showSelector = true
+                VStack {
+                    Text("Input")
+                    Button(model.inputLanguage.name) {
+                        model.showInputSelector = true
+                    }
+                }
+                VStack {
+                    Text("Output")
+                    Button(model.outputLanguage.name) {
+                        model.showOutputSelector = true
+                    }
                 }
                 Button(model.isRecording ? "Stop" : "Listen") {
                     model.toggleRecording()
@@ -61,8 +74,11 @@ struct ContentView: View {
                     .padding()
             }
         }
-        .sheet(isPresented: $model.showSelector) {
-            LanguageSelectionView(languages: Language.supported, selected: $model.selectedLanguage)
+        .sheet(isPresented: $model.showInputSelector) {
+            LanguageSelectionView(languages: Language.inputChoices, selected: $model.inputLanguage)
+        }
+        .sheet(isPresented: $model.showOutputSelector) {
+            LanguageSelectionView(languages: Language.supported, selected: $model.outputLanguage)
         }
         .padding()
     }
