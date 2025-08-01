@@ -2,6 +2,9 @@ import Foundation
 import NaturalLanguage
 
 class Translator {
+    private struct TranslateResult: Decodable {
+        let translatedText: String
+    }
     private func detectLanguage(of text: String) -> String? {
         let recognizer = NLLanguageRecognizer()
         recognizer.processString(text)
@@ -20,9 +23,11 @@ class Translator {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let translated = json["translatedText"] as? String {
-                return translated
+            if let result = try? JSONDecoder().decode(TranslateResult.self, from: data) {
+                return result.translatedText
+            }
+            if let raw = String(data: data, encoding: .utf8) {
+                print("Unexpected translation response", raw)
             }
         } catch {
             print("Translation error", error)
