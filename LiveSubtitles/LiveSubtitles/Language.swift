@@ -15,6 +15,7 @@ extension Language {
         Language(code: "it", name: "Italian"),
         Language(code: "pt", name: "Portuguese"),
         Language(code: "ru", name: "Russian"),
-        Language(code: "zh", name: "Chinese")
+        Language(code: "zh", name: "Chinese"),
+        Language(code: "el", name: "Greek")
     ]
 }
