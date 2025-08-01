@@ -8,8 +8,10 @@ class Translator {
         return recognizer.dominantLanguage?.rawValue
     }
 
-    func translate(_ text: String, to target: String) async -> String {
-        let source = detectLanguage(of: text) ?? "auto"
+    /// Translates the provided text. A specific source language can be
+    /// supplied; otherwise automatic detection will be used.
+    func translate(_ text: String, from source: String?, to target: String) async -> String {
+        let source = source ?? detectLanguage(of: text) ?? "auto"
         guard let url = URL(string: "https://libretranslate.de/translate") else { return text }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
